@@ -193,6 +193,14 @@ class ProyekAkhirController extends Controller
         $risetGroups = $risetGroupsResponse->json();
         $headerData = $headerResponse->json();
 
+        // Ensure headerData has the key 'prodi'
+        if (!isset($headerData[0]['prodi'])) {
+            return response()->json(['error' => 'Header data does not contain prodi'], 500);
+        }
+    
+        // Extract prodi from headerData
+        $prodi = $headerData[0]['prodi'];
+
         // Initialize combinedData array grouped by riset_group
         $groupedData = [];
 
@@ -292,7 +300,7 @@ class ProyekAkhirController extends Controller
                         $assignedExaminers[$availableDosenForMahasiswa[0]['id_dosen']] = true;
                     } else {
                         // Ensure there is no null value for examiners
-                        if($headerData['prodi'] = 'D3 Teknik Informatika'){
+                        if($prodi === "D3 Teknik Informatika"){
                             if (!empty($availableDosen)) {
                                 $mahasiswa['penguji1'] = $availableDosen[0]['id_dosen'];
                                 $mahasiswa['nama_penguji1'] = $availableDosen[0]['nama_dosen'];
@@ -315,7 +323,7 @@ class ProyekAkhirController extends Controller
         
         //penguji menghilang
         // Ensure no penguji1 or penguji2 is empty
-        if($headerData['prodi'] = 'D3 Teknik Informatika'){
+        if($prodi === "D3 Teknik Informatika"){
             foreach ($groupedData as &$group) {
                 $dosenList = $group['riset_group']['dosen'];
                 foreach ($group['riset_group']['ruang'] as &$ruang) {
@@ -359,7 +367,6 @@ class ProyekAkhirController extends Controller
                 }
             }
         }
-       
 
         //Logic to check and remove duplicate mahasiswa in $response
         $uniqueResponse = [];
