@@ -106,6 +106,8 @@ class DataProyekAkhirController extends Controller
             'nrp_mahasiswa' => 'required',
             'nama_mahasiswa' => 'required',
             'judul_pa' => 'required',
+            'umur' => 'required',
+            'jenis_kelmain' => 'required',
             'dosen_pembimbing1' => 'required',
             'dosen_pembimbing2' => 'required',
             'dosen_pembimbing3' => 'required',
@@ -115,6 +117,8 @@ class DataProyekAkhirController extends Controller
             'nrp_mahasiswa' => $request->nrp_mahasiswa,
             'nama_mahasiswa' => $request->nama_mahasiswa,
             'judul_pa' => $request->judul_pa,
+            'umur' => $request->umur,
+            'jenis_kelamin' => $request->jenis_kelamin,
             'dosen_pembimbing1' => $request->dosen_pembimbing1,
             'dosen_pembimbing2' => $request->dosen_pembimbing2,
             'dosen_pembimbing3' => $request->dosen_pembimbing3,
@@ -150,6 +154,8 @@ class DataProyekAkhirController extends Controller
             'nrp_mahasiswa' => 'required',
             'nama_mahasiswa' => 'required',
             'judul_pa' => 'required',
+            'umur' => 'required',
+            'jenis_kelamin' => 'required',
             'dosen_pembimbing1' => 'required',
             'dosen_pembimbing2' => 'required',
             'dosen_pembimbing3' => 'required',
@@ -160,7 +166,9 @@ class DataProyekAkhirController extends Controller
             ->update([
                 'nrp_mahasiswa' => $request->nrp_mahasiswa,
                 'nama_mahasiswa' => $request->nama_mahasiswa,
-                'judul_pa' => $request->judul_pa,
+                'judul_pa' => $request->judul_pa, 
+                'umur' => $request->umur,
+                'jenis_kelamin' => $request->jenis_kelamin,
                 'dosen_pembimbing1' => $request->dosen_pembimbing1,
                 'dosen_pembimbing2' => $request->dosen_pembimbing2,
                 'dosen_pembimbing3' => $request->dosen_pembimbing3,
@@ -241,4 +249,62 @@ class DataProyekAkhirController extends Controller
             return Excel::download(new ProyekAkhirExportMahasiswa($data_pa), 'data_proyek_akhir.xlsx');
         }
     }
+      
+    public function filterByUmur(Request $request, $id_master)
+    {
+        $jenis_kelamin = $request->input('jenis_kelamin');
+        $operator = $request->input('operator');
+        $value1 = $request->input('value1');
+        $value2 = $request->input('value2');
+
+        // Ensure correct case sensitivity for jenis_kelamin
+        $jenis_kelamin = ucfirst($jenis_kelamin);
+
+        // Start building the base query parameters
+        $query = [
+            'id_master' => 'eq.' . $id_master,
+            'select' => '*,proyek_akhir(*,dosen_pembimbing1(*),dosen_pembimbing2(*),dosen_pembimbing3(*))',
+            'proyek_akhir.jenis_kelamin' => 'eq.' . $jenis_kelamin,
+        ];
+
+        // Handle 'between' case separately
+        if ($operator === 'between') {
+            // Separate the two conditions into two distinct query parameters
+            $query['proyek_akhir.umur'] = 'gte.' . $value1;
+            $query['proyek_akhir.umur2'] = 'lte.' . $value2;
+        } else {
+            $operatorMap = [
+                '<' => 'lt',
+                '>' => 'gt',
+                '<=' => 'lte',
+                '>=' => 'gte',
+                '=' => 'eq',
+            ];
+            $query['proyek_akhir.umur'] = $operatorMap[$operator] . '.' . $value1;
+        }
+
+        // Manually build the query string to ensure no duplicate keys
+        $queryString = http_build_query($query, '', '&', PHP_QUERY_RFC3986);
+
+        // Replace the manually added 'umur2' with the correct key
+        $queryString = str_replace('proyek_akhir.umur2', 'proyek_akhir.umur', $queryString);
+
+        // Send the request to Supabase
+        $response = Http::withHeaders([
+            'apikey' => $this->supabaseApiKey,
+        ])->get($this->supabaseUrl . '/rest/v1/master_pa?' . $queryString);
+
+        $data_pa = $response->json();
+
+        // Fetching the dosen data
+        $dosenResponse = Http::withHeaders([
+            'apikey' => $this->supabaseApiKey,
+        ])->get($this->supabaseUrl . '/rest/v1/dosen?select=*');
+
+        $dosen = $dosenResponse->json();
+
+        // Return the view with filtered data
+        return view('proyek_akhir/public_pa', ['data_pa' => $data_pa, 'id_master' => $id_master, 'dosen' => $dosen]);
+    }
+
 }

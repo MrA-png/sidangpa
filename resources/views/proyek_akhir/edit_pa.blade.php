@@ -44,6 +44,18 @@
                               <input type="text" class="form-control" id="nama_mahasiswa" name="nama_mahasiswa" value="{{ $data_pa[0]['nama_mahasiswa'] ?? '' }}">
                           </div>
                           <div class="mb-2">
+                            <label for="jenis_kelamin" class="form-label">Jenis Kelamin Mahasiswa</label>
+                            <select class="form-control" id="jenis_kelamin" name="jenis_kelamin">
+                              <!-- <option value="" disabled selected>Pilih Jenis Kelamin</option> -->
+                              <option value="Laki-Laki" {{ (isset($data_pa[0]['jenis_kelamin']) && $data_pa[0]['jenis_kelamin'] == 'Laki-Laki') ? 'selected' : '' }}>Laki-Laki</option>
+                              <option value="Perempuan" {{ (isset($data_pa[0]['jenis_kelamin']) && $data_pa[0]['jenis_kelamin'] == 'Perempuan') ? 'selected' : '' }}>Perempuan</option>
+                            </select>
+                          </div>
+                          <div class="mb-2">
+                              <label for="umur" class="form-label">Umur Mahasiswa</label>
+                              <input type="number" class="form-control" id="umur" name="umur" value="{{ $data_pa[0]['umur'] ?? '' }}">
+                          </div>
+                          <div class="mb-2">
                               <label for="judul_pa" class="form-label">Judul Proyek Akhir</label>
                               <textarea class="form-control" id="judul_pa" name="judul_pa">{{ $data_pa[0]['judul_pa'] ?? '' }}</textarea>
                           </div>

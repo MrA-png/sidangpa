@@ -65,7 +65,7 @@ Route::get('/proyek-akhir', [DataProyekAkhirController::class, 'getDataMasterPA'
 Route::get('/proyek-akhir/form', [DataProyekAkhirController::class, 'showForm']);
 Route::get('/proyek-akhir/export/{id_master}', [DataProyekAkhirController::class, 'exportDataProyek'])->name('proyek-akhir.data.export');
 Route::get('/proyek-akhir/data/{id_master}/filter', [DataProyekAkhirController::class, 'filterByDosen'])->name('proyek-akhir.data.filterByDosen');
-
+Route::get('/proyek-akhir/filter-umur/{id_master}', [DataProyekAkhirController::class, 'filterByUmur'])->name('proyek-akhir.data.filterByUmur');
 
 Route::get('/register',function () {
     return view('user/register');
